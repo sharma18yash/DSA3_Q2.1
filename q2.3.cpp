@@ -13,8 +13,8 @@ int move_count=0;
 vector<vector<char>> city;
 vector<pair<int, int>> riders;
 queue<int> rq, cq;
-int sr = R-1;
-int sc = C-1;
+int sr;
+int sc;
 int nodes_left_in_layer = 1;
 int nodes_in_next_layer = 0;
 bool reached_end = false;
@@ -49,7 +49,42 @@ void explore_neighbours(int r,int c)
     }
     return;
 }
-// int solve(int sr, int sc)
+int solve(int sr, int sc, int ex, int ey)
+{
+    rq.push(sr);
+    cq.push(sc);
+    // cout<<visited[sr][sc]<<endl;
+    visited[sr][sc] = true;
+    while(rq.size() > 0)
+    {
+        int r = rq.front();
+        rq.pop();
+        int c = cq.front();
+        cq.pop();
+        // cout<<r<<" "<<c<<endl;
+        if(r==ex && c==ey)
+        {
+            reached_end=true;
+            break;
+        }
+        explore_neighbours(r,c);
+        nodes_left_in_layer--;
+        if(nodes_left_in_layer==0)
+        {
+            // cout<<"here";
+            nodes_left_in_layer = nodes_in_next_layer;
+            nodes_in_next_layer=0;
+            move_count++;
+        }
+    }
+
+    if(reached_end==true)
+    {
+        // cout<<move_count<<endl;
+        return move_count;
+    }
+    return -1;
+}
 int main()
 {
     int flag=0;
@@ -90,38 +125,38 @@ int main()
         }
         visited.push_back(arr);
     }
-    rq.push(sr);
-    cq.push(sc);
-    visited[sr][sc] = true;
-    while(rq.size() > 0)
+    int my_time = solve(sr, sc, ex, ey);
+    // cout<<my_time<<endl;
+    for(auto it: riders)
     {
-        int r = rq.front();
-        rq.pop();
-        int c = cq.front();
-        cq.pop();
-        // cout<<r<<" "<<c<<endl;
-        if(r==ex && c==ey)
+        move_count=0;
+        queue<int> empty;
+        swap(cq, empty);
+        swap(rq, empty);
+        visited.clear();
+        for(int i=0; i<R; i++)
         {
-            reached_end=true;
-            break;
+            vector<bool> arr;
+            for(int j=0; j<C; j++)
+            {
+                arr.push_back(false);
+            }
+            visited.push_back(arr);
         }
-        explore_neighbours(r,c);
-        nodes_left_in_layer--;
-        if(nodes_left_in_layer==0)
+        nodes_left_in_layer = 1;
+        nodes_in_next_layer = 0;
+        reached_end = false;
+        // cout<<it.first<<" "<<it.second<<endl;
+        while(rq.empty()==false)
+            rq.pop();
+        int t = solve(it.first, it.second, ex, ey);
+        // cout<<t<<" ";
+        if(my_time > t)
         {
-            // cout<<"here";
-            nodes_left_in_layer = nodes_in_next_layer;
-            nodes_in_next_layer=0;
-            move_count++;
+            cout<<"NO";
+            return 0;
         }
     }
-
-    if(reached_end==true)
-    {
-        cout<<"YES"<<endl;
-        cout<<move_count<<endl;
-        return 0;
-    }
-    cout<<"NO";
+    cout<<"YES"<<endl<<my_time;
     return 0;
 }
